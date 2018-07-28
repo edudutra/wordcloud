@@ -51,7 +51,10 @@ POSITIVE_START = .7
 POSITIVE_END = 1.
 
 #%% Load File
-with open('c:/Trabalho/TCC/eleicoes/sentimento_eleicoes/sentimento_eleicoes.json') as f:
+
+CANDIDATE = 'amoedo'
+
+with open('data/sentimento_' + CANDIDATE + '.json') as f:
     data = json.load(f)
 
 #%% Join texts by sentiment
@@ -144,7 +147,7 @@ grouped_color_func_neg = SimpleGroupedColorFunc({p[0] : color_to_use[math.floor(
 
 #%% Save location and prefix
 
-prefix = 'c:/Trabalho/TCC/imagens/azure'
+prefix = 'imagens/azure_' + CANDIDATE
 
 #%% Negative Cloud
 # generate word cloud
