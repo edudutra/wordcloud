@@ -5,6 +5,8 @@ Created on Thu Jul 26 23:06:31 2018
 @author: eduardo.dutra
 """
 
+CANDIDATE = 'bolsonaro'
+
 #%% Imports
 import csv
 from wordcloud import WordCloud
@@ -17,6 +19,7 @@ from stopwords_pt import stopwords_pt
 import math
 import itertools
 import operator
+import re
 
 #%% Color Class
 class SimpleGroupedColorFunc(object):
@@ -51,19 +54,27 @@ POSITIVE_START = .7
 POSITIVE_END = 1.
 
 #%% Load File
-CANDIDATE = 'eleicoes'
 
-with open('data/sentimento_{}.csv'.format(CANDIDATE), newline='') as csvfile:
-    reader = csv.reader(csvfile, delimiter=',', quotechar='"')
+with open('data/sentimento_{}.csv'.format(CANDIDATE), newline='\r\n', encoding='utf-8') as csvfile:
+    reader = csv.reader(csvfile, delimiter=';', quotechar='"')
     data = list(reader)
 
 # remove header
-del data[0]
+#del data[0]
+
+#%% Clear text
+twitter_username_re = re.compile(r'@([A-Za-z0-9_]+)')
+
+for i, line in enumerate(data):
+    data[i][1] = re.sub(twitter_username_re, '', line[1])
+
 #%% Join texts by sentiment
-    
-text_positive = '\n'.join( [tweet[2] for tweet in data if float(tweet[1]) >= POSITIVE_START and float(tweet[1]) <= POSITIVE_END ] )
-text_negative = '\n'.join( [tweet[2] for tweet in data if float(tweet[1]) >= NEGATIVE_START and float(tweet[1]) <= NEGATIVE_END ] )
-text = '\n'.join( [tweet[2] for tweet in data] )
+
+#text_positive = '\n'.join( [tweet[1] for tweet in data if float(tweet[0]) >= POSITIVE_START and float(tweet[0]) <= POSITIVE_END ] )
+#text_negative = '\n'.join( [tweet[1] for tweet in data if float(tweet[0]) >= NEGATIVE_START and float(tweet[0]) <= NEGATIVE_END ] )
+text_positive = '\n'.join( [tweet[1] for tweet in data if float(tweet[7]) >= POSITIVE_START and float(tweet[7]) <= POSITIVE_END ] )
+text_negative = '\n'.join( [tweet[1] for tweet in data if float(tweet[7]) >= NEGATIVE_START and float(tweet[7]) <= NEGATIVE_END ] )
+text = '\n'.join( [tweet[1] for tweet in data] )
 #%%
 #[tweet[2] for tweet in data if float(tweet[1]) >= POSITIVE_START and float(tweet[1]) <= POSITIVE_END ]
 #%% Tokenize
@@ -79,8 +90,8 @@ score_palavras_full = []
 
 for i, tweet in enumerate(data):
     #print((i, tweet[8]))
-    for palavra in word_tokenize(tweet[2].lower()):
-        score_palavras_full.append( (i, (float(tweet[8])+1)/2, palavra) ) 
+    for palavra in word_tokenize(tweet[1].lower()):
+        score_palavras_full.append( (i, (float(tweet[7])+1)/2, palavra) ) 
     
 score_palavras_full = sorted(score_palavras_full, key=lambda tup: tup[2])
 
@@ -89,6 +100,7 @@ def accumulate(l):
     for key, subiter in it:
         temp_list =[item[1] for item in subiter]
         yield key, sum(temp_list)/len(temp_list)
+
        
 score_palavras = list(accumulate(score_palavras_full))
 score_palavras_neg = list(accumulate([tweet for tweet in score_palavras_full if float(tweet[1]) >= NEGATIVE_START and float(tweet[1]) <= NEGATIVE_END]))
@@ -193,3 +205,14 @@ plt.show()
 #image_total = wordcloud_total.to_image()
 #image_total.show()
 wordcloud_total.to_file(prefix + '_total.bmp')
+
+#%% Write CSVs
+
+freq = wordcloud.process_text(text)
+
+with open('out/pyspark_frequency_{}.csv'.format(CANDIDATE), 'w', encoding='utf-8') as f:  # Just use 'w' mode in 3.x
+    csv_out=csv.writer(f)
+    csv_out.writerow(['Word','Count'])
+    for key in freq.keys():
+        csv_out.writerow((key,freq[key]))
+           

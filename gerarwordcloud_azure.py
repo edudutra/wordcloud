@@ -5,6 +5,8 @@ Created on Tue Jul 24 23:45:56 2018
 @author: eduardo.dutra
 """
 
+CANDIDATE = 'amoedo'
+
 #%% Imports
 import json
 from wordcloud import WordCloud
@@ -17,6 +19,8 @@ from stopwords_pt import stopwords_pt
 import math
 import itertools
 import operator
+import re
+import csv
 
 #%% Color Class
 class SimpleGroupedColorFunc(object):
@@ -52,10 +56,14 @@ POSITIVE_END = 1.
 
 #%% Load File
 
-CANDIDATE = 'eleicoes'
-
 with open('data/sentimento_{}.json'.format(CANDIDATE)) as f:
     data = json.load(f)
+
+#%% Clear text
+twitter_username_re = re.compile(r'@([A-Za-z0-9_]+)')
+
+for i, line in enumerate(data):
+    data[i]['full_text'] = re.sub(twitter_username_re, '', line['full_text'])
 
 #%% Join texts by sentiment
     
@@ -190,3 +198,14 @@ plt.show()
 #image_total = wordcloud_total.to_image()
 #image_total.show()
 wordcloud_total.to_file(prefix + '_total.bmp')
+
+#%% Write CSVs
+
+freq = wordcloud.process_text(text)
+
+with open('out/azure_frequency_{}.csv'.format(CANDIDATE), 'w', encoding='utf-8') as f:  # Just use 'w' mode in 3.x
+    csv_out=csv.writer(f)
+    csv_out.writerow(['Word','Count'])
+    for key in freq.keys():
+        csv_out.writerow((key,freq[key]))
+
