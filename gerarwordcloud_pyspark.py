@@ -5,7 +5,7 @@ Created on Thu Jul 26 23:06:31 2018
 @author: eduardo.dutra
 """
 
-CANDIDATE = 'bolsonaro'
+CANDIDATE = 'eleicoes'
 
 #%% Imports
 import csv

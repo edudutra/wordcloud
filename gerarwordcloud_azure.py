@@ -5,7 +5,7 @@ Created on Tue Jul 24 23:45:56 2018
 @author: eduardo.dutra
 """
 
-CANDIDATE = 'amoedo'
+CANDIDATE = 'eleicoes'
 
 #%% Imports
 import json
