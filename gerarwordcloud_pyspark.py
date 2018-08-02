@@ -5,7 +5,7 @@ Created on Thu Jul 26 23:06:31 2018
 @author: eduardo.dutra
 """
 
-CANDIDATE = 'eleicoes'
+CANDIDATE = 'marina'
 
 #%% Imports
 import csv
@@ -20,30 +20,7 @@ import math
 import itertools
 import operator
 import re
-
-#%% Color Class
-class SimpleGroupedColorFunc(object):
-    """Create a color function object which assigns EXACT colors
-       to certain words based on the color to words mapping
-
-       Parameters
-       ----------
-       color_to_words : dict(str -> list(str))
-         A dictionary that maps a color to the list of words.
-
-       default_color : str
-         Color that will be assigned to a word that's not a member
-         of any value from color_to_words.
-    """
-
-    def __init__(self, word_to_color, default_color):
-        self.word_to_color = word_to_color
- 
-        self.default_color = default_color
-
-    def __call__(self, word, **kwargs):
-        return self.word_to_color.get(word.lower(), self.default_color)
-
+from color_definition import SimpleGroupedColorFunc, color_to_use, default_color
 
 #%% Define limits for negative and positive sentiment
 
@@ -105,8 +82,6 @@ def accumulate(l):
 score_palavras = list(accumulate(score_palavras_full))
 score_palavras_neg = list(accumulate([tweet for tweet in score_palavras_full if float(tweet[1]) >= NEGATIVE_START and float(tweet[1]) <= NEGATIVE_END]))
 score_palavras_pos = list(accumulate([tweet for tweet in score_palavras_full if float(tweet[1]) >= POSITIVE_START and float(tweet[1]) <= POSITIVE_END]))
-#%%
-#[tweet for tweet in score_palavras_full if float(tweet[1]) >= POSITIVE_START and float(tweet[1]) <= POSITIVE_END]
 #%% Instantiate wordcloud       
 
 brazil_mask = np.array(Image.open("brazil_mask.png"))
@@ -115,47 +90,6 @@ wordcloud = WordCloud(width=1200, height=1200, background_color="white", mask=br
                stopwords=stopwords)
 
 #%% Change Colors
-default_color = 'grey'
-
-colors = [
-        '#00FF00',  
-        '#38FF00',
-        '#71FF00', 
-        '#AAFF00', 
-        '#E2FF00', 
-        '#FFE200', 
-        '#FFAA00', 
-        '#FF7100', 
-        '#FF3800', 
-        '#FF0000'
-]
-
-colors2 = [  
-        '#00FF00',  
-        '#1CE200',  
-        '#38C600',  
-        '#55AA00',  
-        '#718D00',  
-        '#8D7100',  
-        '#AA5500',  
-        '#C63800',  
-        '#E21C00',  
-        '#FF0000'
-]
-red_and_green = [  
-        '#00FF00',  
-        '#00FF00',  
-        '#00FF00',  
-        '#00FF00',  
-        '#00FF00',  
-        '#FF0000',  
-        '#FF0000',  
-        '#FF0000',  
-        '#FF0000',  
-        '#FF0000'
-]
-
-color_to_use = colors2
 
 grouped_color_func = SimpleGroupedColorFunc({p[0] : color_to_use[math.floor(p[1]*9.99)] for p in score_palavras}, default_color)
 grouped_color_func_pos = SimpleGroupedColorFunc({p[0] : color_to_use[math.floor(p[1]*9.99)] for p in score_palavras_pos}, default_color)

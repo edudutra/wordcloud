@@ -22,7 +22,7 @@ for filename in glob('out/pyspark*.csv'):
         candidatos[candidato] = data
         full_word_list = list(set(full_word_list + list(data.keys())))
 
-full_word_list = list(full_word_list.sort())
+#full_word_list = list(full_word_list.sort())
 
 keys = list(candidatos.keys())
 grafo = [['palavra']+keys]
