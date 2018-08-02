@@ -8,6 +8,9 @@ Created on Wed Aug  1 23:28:22 2018
 
 import csv
 from glob import glob
+import networkx as nx
+
+
 
 candidatos = dict([])
 full_word_list = []
@@ -36,3 +39,49 @@ for word in full_word_list:
 with open('out/grafo.csv', 'w', encoding='utf-8') as f: 
     csv_out=csv.writer(f)
     csv_out.writerows(grafo)
+
+
+G = nx.Graph()
+
+for filename in glob('out/pyspark*.csv'):
+    print(filename)
+    candidato = filename.split('_')[2].split('.')[0]
+    G.add_node(candidato, candidate=candidato) 
+    with open(filename, newline='\r\n', encoding='utf-8') as csvfile:
+        reader = csv.reader(csvfile, delimiter=',')
+        data = dict(reader)
+        del data['Word']
+        for linha in data.items():
+            if int(linha[1]) >= 1000:
+                G.add_node(linha[0], candidate='') 
+                G.add_edge(candidato, linha[0], frequency=linha[1], candidate=candidato) 
+
+len(list(G.nodes))
+
+
+import matplotlib.pyplot as plt
+# create number for each group to allow use of colormap
+from itertools import count
+# get unique groups
+
+fig = plt.figure(frameon = False)
+fig.set_size_inches(15, 10)
+ax = plt.Axes(fig, [0., 0., 1., 1.], )
+ax.set_axis_off()
+fig.add_axes(ax)
+
+groups = set(nx.get_node_attributes(G,'candidate').values())
+list(groups)
+mapping = dict(zip(sorted(groups),count()))
+nodes = G.nodes()
+colors = [mapping[G.node[n]['candidate']] for n in nodes]
+
+# drawing nodes and edges separately so we can capture collection for colobar
+pos = nx.spring_layout(G)
+ec = nx.draw_networkx_edges(G, pos, alpha=0.2)
+nc = nx.draw_networkx_nodes(G, pos, nodelist=nodes, node_color=colors, 
+                            with_labels=False, node_size=100, cmap=plt.cm.jet)
+plt.colorbar(nc)
+plt.axis('off')
+#plt.show()
+plt.savefig('imagens/grafo.png', dpi = 300)
